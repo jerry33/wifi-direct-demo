@@ -2,5 +2,6 @@
     <string name="app_name">Wifi Direct Demo</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="wifi_direct_app">WiFi Direct APP</string>
     <string name="action_settings">Settings</string>
 </resources>
