@@ -1,4 +1,4 @@
-package com.jerryzigo.wifidirectdemo;
+package com.jerryzigo.wifidirectdemo.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
+
+import com.jerryzigo.wifidirectdemo.activities.WiFiDirectActivity;
 
 /**
  * Created by jerry on 2015-04-15.
@@ -53,11 +55,15 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             // request available peers from the wifi p2p manager. This is an
             // asynchronous call and the calling activity is notified with a
             // callback on PeerListListener.onPeersAvailable()
+            Log.d(TAG, "WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)");
             if (manager != null) {
-
+                Log.d(TAG, "manager != null");
+                manager.requestPeers(channel, activity);
             }
             Log.d(WiFiDirectActivity.TAG, "P2P peers changed");
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
+            Log.d(TAG, "WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)");
+
             if (manager == null) {
                 return;
             }
@@ -71,6 +77,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 //                activity.resetData();
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+            Log.d(TAG, "WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)");
 
         }
     }
