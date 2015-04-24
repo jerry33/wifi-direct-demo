@@ -8,16 +8,13 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jerryzigo.wifidirectdemo.R;
 import com.jerryzigo.wifidirectdemo.adapters.WiFiPeerListAdapter;
@@ -27,7 +24,7 @@ import com.jerryzigo.wifidirectdemo.abs.BaseActivity;
 import java.util.List;
 
 
-public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.ChannelListener, WifiP2pManager.PeerListListener {
+public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.ChannelListener, WifiP2pManager.PeerListListener, View.OnClickListener {
 
     public static final String TAG = "MainActivity";
     private WifiP2pManager mManager;
@@ -57,33 +54,15 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
         mChannel = mManager.initialize(this, getMainLooper(), null);
 
         mRequestPeersButton = (Button) findViewById(R.id.request_peers_button);
+        mRequestPeersButton.setOnClickListener(this);
         mPeersListView = (ListView) findViewById(android.R.id.list);
         mPeerListAdapter = new WiFiPeerListAdapter(this);
         mPeersListView.setAdapter(mPeerListAdapter);
         mPeersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Log.d(TAG, "onItemClicked = " + mPeerListAdapter.getItem(position));
                 WifiP2pDevice device = (WifiP2pDevice)mPeerListAdapter.getItem(position);
-                Log.d(TAG, "onItemClicked = " + device.deviceName);
-            }
-        });
-
-        mRequestPeersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d(TAG, "discovery process successful");
-                    }
-
-                    @Override
-                    public void onFailure(int reason) {
-                        Log.d(TAG, "discovery process unsuccessful");
-                    }
-                });
+                Toast.makeText(WiFiDirectActivity.this, device.deviceName, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -131,5 +110,27 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+
+        switch (id) {
+            case R.id.request_peers_button:
+                mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d(TAG, "discovery process successful");
+                    }
+
+                    @Override
+                    public void onFailure(int reason) {
+                        Log.d(TAG, "discovery process unsuccessful");
+                    }
+                });
+                break;
+        }
+
     }
 }

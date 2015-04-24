@@ -57,7 +57,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             // callback on PeerListListener.onPeersAvailable()
             Log.d(TAG, "WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)");
             if (manager != null) {
-                Log.d(TAG, "manager != null");
+                Log.d(TAG, "manager != null, requestPeers being called");
                 manager.requestPeers(channel, activity);
             }
             Log.d(WiFiDirectActivity.TAG, "P2P peers changed");
