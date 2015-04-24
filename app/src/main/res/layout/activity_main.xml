@@ -17,10 +17,22 @@
         android:layout_height="wrap_content"
         android:text="Discover peers"/>
 
+    <Button
+        android:id="@+id/send_message_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send message"/>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
     </ListView>
+
+    <TextView
+        android:id="@+id/is_group_owner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Group owner: false"/>
 
 </LinearLayout>
