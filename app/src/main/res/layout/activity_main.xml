@@ -21,7 +21,14 @@
         android:id="@+id/send_message_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:enabled="false"
         android:text="Send message"/>
+
+    <Button
+        android:id="@+id/disconnect_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disconnect"/>
 
     <ListView
         android:id="@android:id/list"

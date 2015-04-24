@@ -43,7 +43,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
     private WifiP2pInfo mInfo;
     private BroadcastReceiver mReceiver;
 
-    private Button mRequestPeersButton, mSendMessageButton;
+    private Button mRequestPeersButton, mSendMessageButton, mDisconnectButton;
     private TextView isGroupOwnerTextView;
     private ListView mPeersListView;
     private List<WifiP2pDevice> peersList;
@@ -67,6 +67,8 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
         mRequestPeersButton.setOnClickListener(this);
         mSendMessageButton = (Button) findViewById(R.id.send_message_button);
         mSendMessageButton.setOnClickListener(this);
+        mDisconnectButton = (Button) findViewById(R.id.disconnect_button);
+        mDisconnectButton.setOnClickListener(this);
         isGroupOwnerTextView = (TextView) findViewById(R.id.is_group_owner);
 
         mPeersListView = (ListView) findViewById(android.R.id.list);
@@ -78,6 +80,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                 final WifiP2pDevice device = (WifiP2pDevice)mPeerListAdapter.getItem(position);
                 WifiP2pConfig config = new WifiP2pConfig();
                 config.deviceAddress = device.deviceAddress;
+                mPeerListAdapter.clearPeers();
                 mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
@@ -150,7 +153,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
 
         switch (id) {
             case R.id.request_peers_button:
-                new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
+//                new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
                 mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
@@ -163,6 +166,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                     }
                 });
                 break;
+
             case R.id.send_message_button:
                 Log.d(TAG, "sendMessageButton clicked");
 //                mManager.requestConnectionInfo(mChannel, this);
@@ -173,6 +177,20 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                 serviceIntent.putExtra(ClientMessageService.EXTRAS_GROUP_OWNER_PORT, 8888);
                 Log.d(TAG, "service about to start");
                 startService(serviceIntent);
+                break;
+
+            case R.id.disconnect_button:
+                mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        toast("group removed");
+                    }
+
+                    @Override
+                    public void onFailure(int reason) {
+                        toast("group removed because of " + reason);
+                    }
+                });
                 break;
         }
 
@@ -186,12 +204,13 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
         toast("onConnectionInfoAvailable");
         if (info != null) {
             Log.d(TAG, info.toString());
-            if (info.isGroupOwner) {
+            if (info.groupFormed && info.isGroupOwner) {
                 new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
-//                isGroupOwnerTextView.setText("Group owner: true");
+                isGroupOwnerTextView.setText("Group owner: true");
 //                Log.d(TAG, "address = " + info.groupOwnerAddress.getCanonicalHostName());
-            } else if (info.groupOwnerAddress != null) {
-                Log.d(TAG, "info.groupOwnerAddress = " + info.groupOwnerAddress);
+            } else if (info.groupFormed) {
+//                Log.d(TAG, "info.groupOwnerAddress = " + info.groupOwnerAddress);
+                mSendMessageButton.setEnabled(true);
             }
         }
     }
