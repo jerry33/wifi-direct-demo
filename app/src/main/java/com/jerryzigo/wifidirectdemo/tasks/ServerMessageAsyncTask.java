@@ -31,7 +31,7 @@ public class ServerMessageAsyncTask extends AsyncTask<Void, Void, String> {
     @Override
     protected String doInBackground(Void... params) {
         try {
-            Log.d(TAG, "doInBackground");
+            Log.d(TAG, "doInBackground, SERVER SIDE ON");
 
             /**
              * Create a server socket and wait for client connections. This
@@ -45,7 +45,7 @@ public class ServerMessageAsyncTask extends AsyncTask<Void, Void, String> {
              */
             InputStream inputstream = client.getInputStream();
 //            Toast.makeText(mContext, "doInBackground", Toast.LENGTH_SHORT).show();
-            serverSocket.close();
+//            serverSocket.close();
             return inputstream.toString();
         } catch (IOException e) {
             e.printStackTrace();

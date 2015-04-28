@@ -30,6 +30,12 @@
         android:layout_height="wrap_content"
         android:text="Disconnect"/>
 
+    <Button
+        android:id="@+id/request_connection_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Request connection info"/>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"

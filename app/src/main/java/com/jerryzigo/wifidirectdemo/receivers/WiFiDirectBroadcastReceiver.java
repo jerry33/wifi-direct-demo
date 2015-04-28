@@ -72,6 +72,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (networkInfo.isConnected()) {
                 // we are connected with the other device, request connection
                 // info to find group owner IP
+                manager.requestConnectionInfo(channel, activity);
+                Log.d(TAG, "manager.requestConnectionInfo(channel, activity)");
             } else {
                 // It's a disconnect
 //                activity.resetData();

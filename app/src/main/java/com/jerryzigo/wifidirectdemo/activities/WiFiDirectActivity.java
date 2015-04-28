@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -43,7 +44,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
     private WifiP2pInfo mInfo;
     private BroadcastReceiver mReceiver;
 
-    private Button mRequestPeersButton, mSendMessageButton, mDisconnectButton;
+    private Button mRequestPeersButton, mSendMessageButton, mDisconnectButton, mRequestConnectionInfo;
     private TextView isGroupOwnerTextView;
     private ListView mPeersListView;
     private List<WifiP2pDevice> peersList;
@@ -69,6 +70,8 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
         mSendMessageButton.setOnClickListener(this);
         mDisconnectButton = (Button) findViewById(R.id.disconnect_button);
         mDisconnectButton.setOnClickListener(this);
+        mRequestConnectionInfo = (Button) findViewById(R.id.request_connection_info);
+        mRequestConnectionInfo.setOnClickListener(this);
         isGroupOwnerTextView = (TextView) findViewById(R.id.is_group_owner);
 
         mPeersListView = (ListView) findViewById(android.R.id.list);
@@ -80,6 +83,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                 final WifiP2pDevice device = (WifiP2pDevice)mPeerListAdapter.getItem(position);
                 WifiP2pConfig config = new WifiP2pConfig();
                 config.deviceAddress = device.deviceAddress;
+                config.wps.setup = WpsInfo.PBC;
                 mPeerListAdapter.clearPeers();
                 mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
                     @Override
@@ -88,9 +92,8 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
 //                        new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
                         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
                         String myIpAddress = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-                        toast("My address is: " + myIpAddress);
-                        toast("Opposite address is: " + device.deviceAddress);
-                        mManager.requestConnectionInfo(mChannel, WiFiDirectActivity.this);
+                        toast("My address is: " + myIpAddress + ", opposite address is: " + device.deviceAddress);
+//                        mManager.requestConnectionInfo(mChannel, WiFiDirectActivity.this);
                     }
 
                     @Override
@@ -115,7 +118,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
     @Override
     public void onPeersAvailable(WifiP2pDeviceList peers) {
         Log.d(TAG, String.valueOf(peers.getDeviceList().size()));
-        Log.d(TAG, "onPeersAvailable");
+        Log.d(TAG, "onPeersAvailable, coming from BroadcastReceiver");
         mPeerListAdapter.addAllPeers(peers);
     }
 
@@ -169,7 +172,6 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
 
             case R.id.send_message_button:
                 Log.d(TAG, "sendMessageButton clicked");
-//                mManager.requestConnectionInfo(mChannel, this);
                 Intent serviceIntent = new Intent(this, ClientMessageService.class);
                 serviceIntent.putExtra(ClientMessageService.EXTRAS_GROUP_OWNER_ADDRESS,
                         mInfo.groupOwnerAddress.getHostAddress()); // mInfo.groupOwnerAddress.getHostAddress();
@@ -192,6 +194,10 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                     }
                 });
                 break;
+
+            case R.id.request_connection_info:
+                mManager.requestConnectionInfo(mChannel, WiFiDirectActivity.this);
+                break;
         }
 
     }
@@ -201,15 +207,16 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
         Log.d(TAG, "onConnectionInfoAvailable");
         mInfo = info;
         Log.d(TAG, "info = " + info.toString());
-        toast("onConnectionInfoAvailable");
+//        toast("onConnectionInfoAvailable");
         if (info != null) {
-            Log.d(TAG, info.toString());
+            Log.d(TAG, "info != null, " + info.toString());
             if (info.groupFormed && info.isGroupOwner) {
                 new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
                 isGroupOwnerTextView.setText("Group owner: true");
 //                Log.d(TAG, "address = " + info.groupOwnerAddress.getCanonicalHostName());
+                Log.d(TAG, "info.groupOwnerAddress = " + info.groupOwnerAddress);
             } else if (info.groupFormed) {
-//                Log.d(TAG, "info.groupOwnerAddress = " + info.groupOwnerAddress);
+                Log.d(TAG, "info.groupFormed");
                 mSendMessageButton.setEnabled(true);
             }
         }
