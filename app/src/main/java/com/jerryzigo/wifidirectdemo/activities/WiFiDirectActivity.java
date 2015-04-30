@@ -25,15 +25,21 @@ import android.widget.Toast;
 
 import com.jerryzigo.wifidirectdemo.R;
 import com.jerryzigo.wifidirectdemo.adapters.WiFiPeerListAdapter;
+import com.jerryzigo.wifidirectdemo.listeners.MessageListener;
 import com.jerryzigo.wifidirectdemo.receivers.WiFiDirectBroadcastReceiver;
 import com.jerryzigo.wifidirectdemo.abs.BaseActivity;
 import com.jerryzigo.wifidirectdemo.services.ClientMessageService;
 import com.jerryzigo.wifidirectdemo.tasks.ServerMessageAsyncTask;
+import com.jerryzigo.wifidirectdemo.threads.ServerThread;
 
 import java.util.List;
 
 
-public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.ChannelListener, WifiP2pManager.PeerListListener, View.OnClickListener, WifiP2pManager.ConnectionInfoListener {
+public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.ChannelListener,
+        WifiP2pManager.PeerListListener,
+        View.OnClickListener,
+        WifiP2pManager.ConnectionInfoListener,
+        MessageListener {
 
     public static final String TAG = "WiFiDirectActivity";
     private WifiP2pManager mManager;
@@ -49,6 +55,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
     private ListView mPeersListView;
     private List<WifiP2pDevice> peersList;
     private WiFiPeerListAdapter mPeerListAdapter;
+    private String mClientIpAddress = "ipAddress";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +99,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
 //                        new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
                         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
                         String myIpAddress = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+                        mClientIpAddress = myIpAddress;
                         toast("My address is: " + myIpAddress + ", opposite address is: " + device.deviceAddress);
 //                        mManager.requestConnectionInfo(mChannel, WiFiDirectActivity.this);
                     }
@@ -177,6 +185,7 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                         mInfo.groupOwnerAddress.getHostAddress()); // mInfo.groupOwnerAddress.getHostAddress();
                 Log.d(TAG, "mInfo.groupOwnerAddress.getHostAddress() = " + mInfo.groupOwnerAddress.getHostAddress());
                 serviceIntent.putExtra(ClientMessageService.EXTRAS_GROUP_OWNER_PORT, 8888);
+                serviceIntent.putExtra(ClientMessageService.EXTRAS_CLIENT_IP_ADDRESS, mClientIpAddress);
                 Log.d(TAG, "service about to start");
                 startService(serviceIntent);
                 break;
@@ -211,7 +220,9 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
         if (info != null) {
             Log.d(TAG, "info != null, " + info.toString());
             if (info.groupFormed && info.isGroupOwner) {
-                new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
+//                new ServerMessageAsyncTask(WiFiDirectActivity.this).execute();
+                Thread serverThread = new Thread(new ServerThread(this));
+                serverThread.start();
                 isGroupOwnerTextView.setText("Group owner: true");
 //                Log.d(TAG, "address = " + info.groupOwnerAddress.getCanonicalHostName());
                 Log.d(TAG, "info.groupOwnerAddress = " + info.groupOwnerAddress);
@@ -220,5 +231,21 @@ public class WiFiDirectActivity extends BaseActivity implements WifiP2pManager.C
                 mSendMessageButton.setEnabled(true);
             }
         }
+    }
+
+    @Override
+    public void onMessageReceived(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(WiFiDirectActivity.this, "message received = " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    @Override
+    public void onMessageSent() {
+
     }
 }

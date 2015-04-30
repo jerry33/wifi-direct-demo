@@ -21,6 +21,7 @@ public class ClientMessageService extends IntentService {
     private static final int SOCKET_TIMEOUT = 5000;
     public static final String EXTRAS_GROUP_OWNER_ADDRESS = "go_host";
     public static final String EXTRAS_GROUP_OWNER_PORT = "go_port";
+    public static final String EXTRAS_CLIENT_IP_ADDRESS = "client_ip_address";
 
     private static final String TAG = "ClientMessageService";
 
@@ -43,7 +44,7 @@ public class ClientMessageService extends IntentService {
             socket.connect((new InetSocketAddress(host, port)), SOCKET_TIMEOUT);
             Log.d(TAG, "Client socket - " + socket.isConnected());
 
-            String messageToSend = "messageToSend";
+            String messageToSend = intent.getExtras().getString(EXTRAS_CLIENT_IP_ADDRESS);
 
             OutputStream outputStream = socket.getOutputStream();
             InputStream inputStream = null;
